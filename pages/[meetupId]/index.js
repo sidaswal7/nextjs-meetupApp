@@ -1,33 +1,46 @@
 import MeetupDetails from "../../components/meetups/MeetupDetails";
-
+import { MongoClient, ObjectId} from "mongodb";
 const MeetupDetailsPage = (props) => {
   return (
     <MeetupDetails
-      meetupData={props.meetupData}
+      image={props.meetupData.image}
+      title={props.meetupData.title}
+      address={props.meetupData.address}
+      desciption={props.meetupData.desciption}
     />
   );
 };
 export async function getStaticPaths(){
+
+    const client = await MongoClient.connect(`mongodb+srv://siddhantaswal7:pingpongxyz@cluster0.mbqo9op.mongodb.net/meetups`);
+    const db = client.db();
+
+    const meetupsCollections = db.collection('meetups');
+    const meetups = await meetupsCollections.find({},{_id:1}).toArray();
+    client.close();
     return{
         fallback:false,
-        paths:[
-            {params:{meetupId:'m1'}},
-            {params:{meetupId:'m2'}},
-            {params:{meetupId:'m3'}}
-
-        ]
+        paths: meetups.map(meetup=>({params:{meetupId:meetup._id.toString()}}))
     }
 }
 export async function getStaticProps(context){
     const meetupId = context.params.meetupId;
+    const client = await MongoClient.connect(`mongodb+srv://siddhantaswal7:pingpongxyz@cluster0.mbqo9op.mongodb.net/meetups`);
+    const db = client.db();
+
+    const meetupsCollections = db.collection('meetups');
+    const selectedMeetup = await  meetupsCollections.findOne({
+        _id:ObjectId(meetupId),
+    });
+    client.close();
     return{
         props:{
-            meetupData:{
-                img:"https://picsum.photos/id/1050/200/300",
-                id:meetupId,
-                title:"A first meetup",
-                address:"some street 345 new Coast",
-                description:"the Meetup Description"
+            meetupData: {
+                id:selectedMeetup._id.toString(),
+                title:selectedMeetup.title,
+                address:selectedMeetup.address,
+                image:selectedMeetup.image,
+                desciption:selectedMeetup.desciption
             }
         }
     }

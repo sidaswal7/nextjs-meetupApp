@@ -3,7 +3,7 @@ import classes from './meetupDetails.module.css';
 const MeetupDetails=(props)=>{
     return (
       <section className={classes.details}>
-        <img src={props.img } alt={props.title} />
+        <img src={props.image } alt={props.title} />
 
         <h1>{props.title}</h1>
         <address>{props.address}</address>
