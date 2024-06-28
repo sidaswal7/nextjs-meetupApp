@@ -1,11 +1,12 @@
 import Layout from "@/components/layout/Layout";
+import { MongoClient } from "mongodb";
 import MeetupList from "@/components/meetups/MeetupList";
 
 const DummyMeetups = [
     {
       id: "m1",
       title: "First Meetup",
-      image: "https://picsum.photos/id/1018/200/300",
+      image: "https://images.pexels.com/photos/25677021/pexels-photo-25677021/free-photo-of-village-in-green-valley.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2s",
       address: "Some address 5,343,2 some city",
       description: "This is the first meetup. It will be an exciting event!",
     },
@@ -47,9 +48,21 @@ const HomePage = (props)=>{
 
 }
 export async function getStaticProps(){
+    const client = await MongoClient.connect(`mongodb+srv://siddhantaswal7:pingpongxyz@cluster0.mbqo9op.mongodb.net/meetups`);
+    const db = client.db();
+
+    const meetupsCollections = db.collection('meetups');
+    const meetups = await meetupsCollections.find().toArray;
+    client.close();
     return {
         props:{
-            meetups: DummyMeetups
+            meetups: meetups.map(meetup=>({
+                title:meetup.title,
+                address:meetup.address,
+                image:meetup.image,
+                id:meetup._id.toString()
+
+            }))
         },
         revalidate:10
     }
